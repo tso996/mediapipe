@@ -20,29 +20,6 @@ licenses(["notice"])
 package(default_visibility = ["//mediapipe/examples:__subpackages__"])
 
 
-config_setting(
-    name = "emscripten",
-    values = {"crosstool_top": "@emsdk//emscripten_toolchain:everything"},
-)
-
-config_setting(
-    name = "emscripten_wasm",
-    values = {
-        "crosstool_top": "@emsdk//emscripten_toolchain:everything",
-        "cpu": "wasm",
-    },
-)
-
-config_setting(
-    name = "emscripten_wasmsimd",
-    values = {
-        "crosstool_top": "@emsdk//emscripten_toolchain:everything",
-        "cpu": "wasm",
-        "copt": "-msimd128",
-    },
-)
-
-
 cc_binary(
     name = "hello_world",
     srcs = ["hello_world.cc"],
@@ -54,6 +31,11 @@ cc_binary(
         "//mediapipe/framework/port:parse_text_proto",
         "//mediapipe/framework/port:status",
     ],
+    linkopts = [
+        "-s USE_PTHREADS=1",
+        "-s ALLOW_MEMORY_GROWTH=0",
+        "-s ASSERTIONS=1",
+    ]
 )
 
 wasm_cc_binary(
