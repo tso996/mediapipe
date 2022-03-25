@@ -2,6 +2,8 @@ workspace(name = "mediapipe")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+
+
 http_archive(
     name = "bazel_skylib",
     type = "tar.gz",
@@ -413,3 +415,19 @@ libedgetpu_dependencies()
 
 load("@coral_crosstool//:configure.bzl", "cc_crosstool")
 cc_crosstool(name = "crosstool")
+android_sdk_repository(name = "androidsdk", path = "/Users/joe/Android/Sdk")
+android_ndk_repository(name = "androidndk", path = "/Users/joe/Android/Sdk/ndk-bundle/android-ndk-r21")
+
+local_repository(
+    name = "emsdk",
+    path = ".",
+)
+
+load("@emsdk//:deps.bzl", "deps")
+
+deps()
+
+load("@emsdk//:emscripten_deps.bzl", "emscripten_deps")
+
+emscripten_deps()
+

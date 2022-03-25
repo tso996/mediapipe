@@ -12,9 +12,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@emsdk//emscripten_toolchain:wasm_rules.bzl", "wasm_cc_binary")
+
 licenses(["notice"])
 
 package(default_visibility = ["//mediapipe/examples:__subpackages__"])
+
+
+config_setting(
+    name = "emscripten",
+    values = {"crosstool_top": "@emsdk//emscripten_toolchain:everything"},
+)
+
+config_setting(
+    name = "emscripten_wasm",
+    values = {
+        "crosstool_top": "@emsdk//emscripten_toolchain:everything",
+        "cpu": "wasm",
+    },
+)
+
+config_setting(
+    name = "emscripten_wasmsimd",
+    values = {
+        "crosstool_top": "@emsdk//emscripten_toolchain:everything",
+        "cpu": "wasm",
+        "copt": "-msimd128",
+    },
+)
+
 
 cc_binary(
     name = "hello_world",
@@ -27,4 +54,9 @@ cc_binary(
         "//mediapipe/framework/port:parse_text_proto",
         "//mediapipe/framework/port:status",
     ],
+)
+
+wasm_cc_binary(
+    name = "hello-world-wasm",
+    cc_target = ":hello_world",
 )

@@ -17,6 +17,29 @@ licenses(["notice"])  # Apache 2.0
 # Note: yes, these need to use "//external:android/crosstool", not
 # @androidndk//:default_crosstool.
 
+
+config_setting(
+    name = "emscripten",
+    values = {"crosstool_top": "@emsdk//emscripten_toolchain:everything"},
+)
+
+config_setting(
+    name = "emscripten_wasm",
+    values = {
+        "crosstool_top": "@emsdk//emscripten_toolchain:everything",
+        "cpu": "wasm",
+    },
+)
+
+config_setting(
+    name = "emscripten_wasmsimd",
+    values = {
+        "crosstool_top": "@emsdk//emscripten_toolchain:everything",
+        "cpu": "wasm",
+        "copt": "-msimd128",
+    },
+)
+
 config_setting(
     name = "android",
     values = {"crosstool_top": "//external:android/crosstool"},
@@ -143,3 +166,5 @@ exports_files(
     ["provisioning_profile.mobileprovision"],
     visibility = ["//visibility:public"],
 )
+
+
