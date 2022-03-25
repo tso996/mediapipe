@@ -20,6 +20,10 @@ licenses(["notice"])
 package(default_visibility = ["//mediapipe/examples:__subpackages__"])
 
 
+DEFAULT_EMSCRIPTEN_LINKOPTS = [
+  
+    "-s USE_PTHREADS=0",  # Disable pthreads
+]
 cc_binary(
     name = "hello_world",
     srcs = ["hello_world.cc"],
@@ -32,7 +36,7 @@ cc_binary(
         "//mediapipe/framework/port:status",
     ],
     linkopts = [
-        "-s USE_PTHREADS=1",
+        "-s USE_PTHREADS=0",
         "-s ALLOW_MEMORY_GROWTH=0",
         "-s ASSERTIONS=1",
     ]
