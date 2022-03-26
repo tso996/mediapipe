@@ -61,9 +61,8 @@ absl::Status PrintHelloWorld() {
 }  // namespace mediapipe
 
 int main(int argc, char** argv) {
-  google::InitGoogleLogging(argv[0]);
-  CHECK(mediapipe::PrintHelloWorld().ok());
-  //std::cout << "hello world!!!!!!!!!" << std::endl;
+  
+  std::cout << "This is edge detection!!!!!!!!!" << std::endl;
   return 0;
 }
 

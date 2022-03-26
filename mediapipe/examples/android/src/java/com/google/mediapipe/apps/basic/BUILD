@@ -11,8 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@emsdk//emscripten_toolchain:wasm_rules.bzl", "wasm_cc_binary")
+
 
 licenses(["notice"])
+
+DEFAULT_EMSCRIPTEN_LINKOPTS = [
+  
+    "-s USE_PTHREADS=0",  # Disable pthreads
+]
 
 # Basic library common across example apps.
 android_library(
@@ -48,6 +56,16 @@ cc_binary(
         "//mediapipe/graphs/edge_detection:mobile_calculators",
         "//mediapipe/java/com/google/mediapipe/framework/jni:mediapipe_framework_jni",
     ],
+    linkopts = [
+        "-s USE_PTHREADS=0",
+        "-s ALLOW_MEMORY_GROWTH=0",
+        "-s ASSERTIONS=1",
+    ]
+)
+
+wasm_cc_binary(
+    name = "edge-detection-wasm",
+    cc_target = ":libmediapipe_jni.so",
 )
 
 # Converts the .so cc_binary into a cc_library, to be consumed in an android_binary.
