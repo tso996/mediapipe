@@ -28,14 +28,13 @@ DEFAULT_EMSCRIPTEN_LINKOPTS = [
 cc_binary(
     name = "object-tracking-mobile",
     deps = [
-        "//mediapipe/graphs/tracking:mobile_calculators",
+        "//mediapipe/graphs/tracking/subgraphs:object_tracking_gpu",
     ],
     linkopts = [
         "-s USE_PTHREADS=0",
         "-s ALLOW_MEMORY_GROWTH=0",
         "-s ASSERTIONS=1",
         "-s USE_WEBGL2=1", 
-        "--export-all",
     ]
 )
 wasm_cc_binary(

@@ -27,8 +27,10 @@ DEFAULT_EMSCRIPTEN_LINKOPTS = [
 
 cc_binary(
     name = "edge-detection",
+    srcs = ["hello_world.cc"],
     visibility = ["//visibility:public"],
     deps = [
+        "//third_party:opencv",
         "//mediapipe/graphs/edge_detection:mobile_calculators",
     ],
     linkopts = [

@@ -194,7 +194,7 @@ alias(
         "//mediapipe:ios": "@ios_opencv//:opencv",
         "//mediapipe:macos": "@macos_opencv//:opencv",
         "//mediapipe:windows": "@windows_opencv//:opencv",
-        "//conditions:default": "@linux_opencv//:opencv",
+        "//conditions:default": "@macos_opencv//:opencv",
     }),
 )
 
@@ -212,7 +212,7 @@ cc_library(
             "@macos_ffmpeg//:libffmpeg",
         ],
         "//conditions:default": [
-            "@linux_ffmpeg//:libffmpeg",
+            "@macos_ffmpeg//:libffmpeg",
         ],
     }),
 )
