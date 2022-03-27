@@ -191,25 +191,25 @@ http_archive(
 new_local_repository(
     name = "linux_opencv",
     build_file = "@//third_party:opencv_linux.BUILD",
-    path = "/usr",
+    path = "/opt/homebrew/opt/opencv@3",
 )
 
 new_local_repository(
     name = "linux_ffmpeg",
     build_file = "@//third_party:ffmpeg_linux.BUILD",
-    path = "/usr"
+    path = "/opt/homebrew/Cellar/ffmpeg"
 )
 
 new_local_repository(
     name = "macos_opencv",
     build_file = "@//third_party:opencv_macos.BUILD",
-    path = "/usr/local/opt/opencv@3",
+    path = "/opt/homebrew/opt/opencv@3",
 )
 
 new_local_repository(
     name = "macos_ffmpeg",
     build_file = "@//third_party:ffmpeg_macos.BUILD",
-    path = "/usr/local/opt/ffmpeg",
+    path = "/opt/homebrew/Cellar/ffmpeg",
 )
 
 new_local_repository(
