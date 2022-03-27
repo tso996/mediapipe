@@ -26,19 +26,20 @@ DEFAULT_EMSCRIPTEN_LINKOPTS = [
 ]
 
 cc_binary(
-    name = "object-tracking-mobile",
+    name = "edge-detection",
+    visibility = ["//visibility:public"],
     deps = [
-        "//mediapipe/graphs/tracking:mobile_calculators",
+        "//mediapipe/graphs/edge_detection:mobile_calculators",
     ],
     linkopts = [
         "-s USE_PTHREADS=0",
         "-s ALLOW_MEMORY_GROWTH=0",
         "-s ASSERTIONS=1",
         "-s USE_WEBGL2=1", 
-        "--export-all",
     ]
 )
+
 wasm_cc_binary(
-    name = "object-tracking-wasm",
-    cc_target = ":object-tracking-mobile",
+    name = "edge-detection-wasm",
+    cc_target = ":edge-detection",
 )

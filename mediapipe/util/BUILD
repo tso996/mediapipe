@@ -187,6 +187,8 @@ cc_library(
     ] + select({
         "//conditions:default": [
             "@com_google_absl//absl/flags:flag",
+            "//mediapipe/util/android/file/base",
+            "//mediapipe/util/android:asset_manager_util",
         ],
         "//mediapipe:android": [
             "//mediapipe/util/android:asset_manager_util",
