@@ -13,7 +13,7 @@ cc_library(
             "lib/libopencv_calib3d.a",
             "lib/libopencv_features2d.a",
             #"lib/libopencv_highgui.a",#this causes problems when compiling to wasm
-            "lib/libopencv_imgcodecs.a",
+            #"lib/libopencv_imgcodecs.a",
             "lib/libopencv_imgproc.a",
             "lib/libopencv_video.a",
             #"lib/libopencv_videoio.a",#this causes problems when compiling to wasm

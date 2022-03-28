@@ -23,11 +23,19 @@ DEFAULT_EMSCRIPTEN_LINKOPTS = [
   
     "-s USE_PTHREADS=0",  # Disable pthreads
     "-s USE_WEBGL2=1",
+    "-s ERROR_ON_UNDEFINED_SYMBOLS=0",
+   # "-s LLD_REPORT_UNDEFINED=1",
 ]
 
 cc_binary(
     name = "object-tracking-mobile",
+    srcs = ["box-tracking.cc"],
     deps = [
+        "//mediapipe/calculators/core:pass_through_calculator",
+        "//mediapipe/framework:calculator_graph",
+        "//mediapipe/framework/port:logging",
+        "//mediapipe/framework/port:parse_text_proto",
+        "//mediapipe/framework/port:status",
         "//mediapipe/graphs/tracking/subgraphs:object_tracking_gpu",
     ],
     linkopts = [
@@ -35,6 +43,7 @@ cc_binary(
         "-s ALLOW_MEMORY_GROWTH=0",
         "-s ASSERTIONS=1",
         "-s USE_WEBGL2=1", 
+        "-s ERROR_ON_UNDEFINED_SYMBOLS=0",
     ]
 )
 wasm_cc_binary(
