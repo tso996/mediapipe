@@ -9,12 +9,11 @@ cc_library(
     name = "opencv",
     srcs = glob(
         [
-            "lib/libopencv_core.dylib",
-            
+            "lib/libopencv_core.a",
         ],
     ),
     hdrs = glob(["include/opencv2/**/*.h*"]),
     includes = ["include/"],
-    linkstatic = 1,
+    linkstatic = 0,
     visibility = ["//visibility:public"],
 )
