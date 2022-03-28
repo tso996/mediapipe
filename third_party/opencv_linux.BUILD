@@ -9,7 +9,7 @@ cc_library(
     name = "opencv",
     srcs = glob(
         [
-            "lib/libopencv_core.dylib",
+            "lib/libopencv_core.a",
             "lib/libopencv_calib3d.dylib",
             "lib/libopencv_features2d.dylib",
             "lib/libopencv_highgui.dylib",

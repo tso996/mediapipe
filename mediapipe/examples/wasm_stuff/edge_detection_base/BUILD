@@ -30,7 +30,7 @@ cc_binary(
     srcs = ["hello_world.cc"],
     visibility = ["//visibility:public"],
     deps = [
-        "//third_party:opencv",
+        # "//third_party:opencv",
         "//mediapipe/graphs/edge_detection:mobile_calculators",
     ],
     linkopts = [
