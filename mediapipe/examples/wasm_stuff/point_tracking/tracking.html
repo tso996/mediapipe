@@ -1,0 +1,61 @@
+<script src="https://preview.babylonjs.com/babylon.js" crossorigin></script>
+<div class="jumbotron" style="margin-top: 20px; padding: 20px">
+  <p><span id="errorMsg"></span></p>
+  <p>Image to detect</p>
+  <div>
+    <canvas
+      id="canvasImageToDetect"
+      width="320"
+      height="240"
+      style="border: 1px solid #000000"
+    ></canvas>
+  </div>
+</div>
+<div id="layer3d" style="position: relative">
+  <canvas
+    class="video-canvas-render"
+    id="outputCanvas"
+    width="480"
+    height="640"
+    style="border: 1px solid #000000"
+  ></canvas>
+  <video
+    class="video-canvas-render"
+    id="video"
+    style="border: 1px solid #000000"
+    playsinline
+    autoplay
+  ></video>
+  <canvas
+    class="video-canvas-render"
+    id="renderCanvas"
+    width="640"
+    height="480"
+    style="border: 1px solid #000000"
+  ></canvas>
+</div>
+<div id="container"></div>
+<style>
+  .layer3d {
+    height: 480px;
+    width: 640px;
+  }
+  .video-canvas-render {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+  }
+</style>
+<script>
+  var isWasmLoaded = false;
+</script>
+
+<script src="./videoProcess.js"></script>
+<script src="./3drenderer.js" type="text/javascript"></script>
+<script
+  src="./outputWasmSafari.js"
+  type="text/javascript"
+  onload="onWasmLoaded();"
+></script>

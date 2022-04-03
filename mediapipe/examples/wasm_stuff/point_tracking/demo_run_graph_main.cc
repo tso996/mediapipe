@@ -14,6 +14,7 @@
 //
 // An example of sending OpenCV webcam frames into a MediaPipe graph.
 #include <cstdlib>
+#include <iostream>
 
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
@@ -27,36 +28,18 @@
 #include "mediapipe/framework/port/parse_text_proto.h"
 #include "mediapipe/framework/port/status.h"
 
+#include <emscripten/bind.h>
+
+using namespace emscripten;
+
 constexpr char kInputStream[] = "input_video";
 constexpr char kOutputStream[] = "output_video";
 constexpr char kWindowName[] = "MediaPipe";
 
-bool frame_available = false
+bool frame_available = true
 
 mediapipe::CalculatorGraph graph;
-
-
-// ABSL_FLAG(std::string, calculator_graph_config_file, "",
-//           "Name of file containing text format CalculatorGraphConfig proto.");
-// ABSL_FLAG(std::string, input_video_path, "",
-//           "Full path of video to load. "
-//           "If not provided, attempt to use a webcam.");
-// ABSL_FLAG(std::string, output_video_path, "",
-//           "Full path of where to save result (.mp4 only). "
-//           "If not provided, show result in a window.");
-void set_frame_available(){
-  frame_available = true;
-}
-
-
-absl::Status RunMPPGraph() {
-  // std::string calculator_graph_config_contents;
-  // MP_RETURN_IF_ERROR(mediapipe::file::GetContents(
-  //     absl::GetFlag(FLAGS_calculator_graph_config_file),
-  //     &calculator_graph_config_contents));
-  // LOG(INFO) << "Get calculator graph config contents: "
-  //           << calculator_graph_config_contents;
-  mediapipe::CalculatorGraphConfig config =
+mediapipe::CalculatorGraphConfig config =
       mediapipe::ParseTextProtoOrDie<mediapipe::CalculatorGraphConfig>(R"pb(
         input_stream: "in"
         output_stream: "out"
@@ -72,113 +55,134 @@ absl::Status RunMPPGraph() {
         }
       )pb");
 
-  std::cout << "Initialising calculator graph.." << std::endl;
-  // mediapipe::CalculatorGraph graph;
-  MP_RETURN_IF_ERROR(graph.Initialize(config));
+mediapipe::OutputStreamPoller poller
 
-//   LOG(INFO) << "Initialize the camera or load the video.";
-//   cv::VideoCapture capture;
-//   const bool load_video = !absl::GetFlag(FLAGS_input_video_path).empty();
-//   if (load_video) {
-//     capture.open(absl::GetFlag(FLAGS_input_video_path));
-//   } else {
-//     capture.open(0);
-//   }
-//   RET_CHECK(capture.isOpened());
+int result[5];//return from function that contains the output buffer and size
 
-//   cv::VideoWriter writer;
-//   const bool save_video = !absl::GetFlag(FLAGS_output_video_path).empty();
-//   if (!save_video) {
-//     cv::namedWindow(kWindowName, /*flags=WINDOW_AUTOSIZE*/ 1);
-// #if (CV_MAJOR_VERSION >= 3) && (CV_MINOR_VERSION >= 2)
-//     capture.set(cv::CAP_PROP_FRAME_WIDTH, 640);
-//     capture.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
-//     capture.set(cv::CAP_PROP_FPS, 30);
-// #endif
-//   }
 
-  std::cout << "Calculator graph run started.." << std::endl;
-  ASSIGN_OR_RETURN(mediapipe::OutputStreamPoller poller,
-                   graph.AddOutputStreamPoller(kOutputStream));
-  MP_RETURN_IF_ERROR(graph.StartRun({}));
-
-  std::cout << "Started processing" << std::endl;
-  bool grab_frames = true;
-  while (grab_frames) {
-    if(frame_available==false){
-      continue;
-    }
-    // Capture opencv camera or video frame.
-    cv::Mat camera_frame_raw;
-    capture >> camera_frame_raw;
-    if (camera_frame_raw.empty()) {
-      if (!load_video) {
-        LOG(INFO) << "Ignore empty frames from camera.";
-        continue;
-      }
-      LOG(INFO) << "Empty frame, end of video reached.";
-      break;
-    }
-    cv::Mat camera_frame;
-    cv::cvtColor(camera_frame_raw, camera_frame, cv::COLOR_BGR2RGB);
-    if (!load_video) {
-      cv::flip(camera_frame, camera_frame, /*flipcode=HORIZONTAL*/ 1);
+    void set_frame_available(){
+      frame_available = true;
     }
 
-    // Wrap Mat into an ImageFrame.
-    auto input_frame = absl::make_unique<mediapipe::ImageFrame>(
-        mediapipe::ImageFormat::SRGB, camera_frame.cols, camera_frame.rows,
-        mediapipe::ImageFrame::kDefaultAlignmentBoundary);
-    cv::Mat input_frame_mat = mediapipe::formats::MatView(input_frame.get());
-    camera_frame.copyTo(input_frame_mat);
+    void set_frame_unavailable(){
+      frame_available = false;
+    }
 
-    // Send image packet into the graph.
-    size_t frame_timestamp_us =
-        (double)cv::getTickCount() / (double)cv::getTickFrequency() * 1e6;
-    MP_RETURN_IF_ERROR(graph.AddPacketToInputStream(
-        kInputStream, mediapipe::Adopt(input_frame.release())
-                          .At(mediapipe::Timestamp(frame_timestamp_us))));
+    uint8_t* createBuffer(int width, int height) {
+            return (uint8_t*)malloc(width * height * 4 * sizeof(uint8_t));
+          }
 
-    // Get the graph result packet, or stop if that fails.
-    mediapipe::Packet packet;
-    if (!poller.Next(&packet)) break;
-    auto& output_frame = packet.Get<mediapipe::ImageFrame>();
+    void destroyBuffer(uint8_t* p) {
+            free(p);
+          }
 
-    // Convert back to opencv for display or saving.
-    cv::Mat output_frame_mat = mediapipe::formats::MatView(&output_frame);
-    cv::cvtColor(output_frame_mat, output_frame_mat, cv::COLOR_RGB2BGR);
-    // if (save_video) {
-    //   if (!writer.isOpened()) {
-    //     LOG(INFO) << "Prepare video writer.";
-    //     writer.open(absl::GetFlag(FLAGS_output_video_path),
-    //                 mediapipe::fourcc('a', 'v', 'c', '1'),  // .mp4
-    //                 capture.get(cv::CAP_PROP_FPS), output_frame_mat.size());
-    //     RET_CHECK(writer.isOpened());
-    //   }
-    //   writer.write(output_frame_mat);
-    // } else {
-    //   cv::imshow(kWindowName, output_frame_mat);
-    //   // Press any key to exit.
-    //   const int pressed_key = cv::waitKey(5);
-    //   if (pressed_key >= 0 && pressed_key != 255) grab_frames = false;
-    // }
-  }
 
-  std::cout << "Shutting down.." << std::endl;
-  if (writer.isOpened()) writer.release();
-  MP_RETURN_IF_ERROR(graph.CloseInputStream(kInputStream));
-  return graph.WaitUntilDone();
-}
+    //call this once from the js before passing frames in loop
+    void initialise_and_run_graph(){
+      std::cout << "Initialising calculator graph.." << std::endl;
+      graph.Initialize(config);
+      std::cout << "Calculator graph run started.." << std::endl;
+      ASSIGN_OR_RETURN(poller,
+                      graph.AddOutputStreamPoller(kOutputStream));
+      graph.StartRun({});
+      std::cout << "about to start processing frames" << std::endl;
+    }
 
-int main(int argc, char** argv) {
-  google::InitGoogleLogging(argv[0]);
-  absl::ParseCommandLine(argc, argv);
-  absl::Status run_status = RunMPPGraph();
-  if (!run_status.ok()) {
-    LOG(ERROR) << "Failed to run the graph: " << run_status.message();
-    return EXIT_FAILURE;
-  } else {
-    LOG(INFO) << "Success!";
-  }
-  return EXIT_SUCCESS;
-}
+    int RunMainProcess(uint8_t* img_in, int width, int height) {
+      
+        auto t1 = high_resolution_clock::now();  
+    //======================================= run execution timer
+    //     cv::namedWindow(kWindowName, /*flags=WINDOW_AUTOSIZE*/ 1);
+    // #if (CV_MAJOR_VERSION >= 3) && (CV_MINOR_VERSION >= 2)
+    //     capture.set(cv::CAP_PROP_FRAME_WIDTH, 640);
+    //     capture.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+    //     capture.set(cv::CAP_PROP_FPS, 30);
+    // #endif
+
+        if(!frame_available){
+          return 1;
+        }
+        cv::Mat camera_frame_raw;
+        //capture >> camera_frame_raw;
+        int rows = 480; //height
+        int cols = 640; //width
+        camera_frame_raw = Mat(rows, cols, CV_8UC4);
+        camera_frame_raw.data = img_in;
+
+        if (camera_frame_raw.empty()) { 
+            return; 
+        }
+        cv::Mat camera_frame;
+        cv::cvtColor(camera_frame_raw, camera_frame, cv::COLOR_BGR2RGB);
+        cv::flip(camera_frame, camera_frame, /*flipcode=HORIZONTAL*/ 1);
+
+        // Wrap Mat into an ImageFrame.
+        auto input_frame = absl::make_unique<mediapipe::ImageFrame>(
+            mediapipe::ImageFormat::SRGB, camera_frame.cols, camera_frame.rows,
+            mediapipe::Imagame.copeFrame::kDefaultAlignmentBoundary);
+        cv::Mat input_frame_mat = mediapipe::formats::MatView(input_frame.get());
+        camera_fryTo(input_frame_mat);
+
+        // Send image packet into the graph.
+        size_t frame_timestamp_us =
+            (double)cv::getTickCount() / (double)cv::getTickFrequency() * 1e6;
+            graph.AddPacketToInputStream(
+            kInputStream, mediapipe::Adopt(input_frame.release())
+                              .At(mediapipe::Timestamp(frame_timestamp_us)));
+
+        // Get the graph result packet, or stop if that fails.
+        mediapipe::Packet packet;
+        if (!poller.Next(&packet)) {
+          std::cout << "poller.Next error. No next packet.." << std::endl;
+          //break;
+        }
+        auto& output_frame = packet.Get<mediapipe::ImageFrame>();
+
+        // Convert back to opencv for display or saving.
+        cv::Mat output_frame_mat = mediapipe::formats::MatView(&output_frame);
+        cv::cvtColor(output_frame_mat, output_frame_mat, cv::COLOR_RGB2BGR);
+
+        //arranging the output into arrays to be accessed by js
+        //uint8_t* outputBuffer1 = (uint8_t*)malloc(4 * 4 * sizeof(uint8_t));//the box coordinates
+        uint8_t* outputVideoBuffer = (uint8_t*)malloc(cols * rows * 4 * sizeof(uint8_t));
+        outputVideoBuffer = output_frame_mat.data;
+        result[3] = (int)outputVideoBuffer;
+        result[4] = rows*cols*4;
+
+        //===========================================
+        //execution time....
+              auto t2 = high_resolution_clock::now();
+              auto ms_int = duration_cast<milliseconds>(t2 - t1);
+              duration<double, std::milli> ms_double = t2 - t1;
+              return ms_int.count();
+    }
+
+
+    int getVideoResultPointer() {
+            return result[3];//gets the pointer to the output buffer image
+          }
+
+    int getVideoResultSize() {
+            return result[4];
+          }
+
+    void shut_down_graph(){
+      std::cout << "Shutting down.." << std::endl;
+      graph.CloseInputStream(kInputStream);
+      graph.WaitUntilDone();
+    }
+
+    int main(int argc, char** argv) {
+      std::cout << "box tracking wasm loaded." << std::endl;
+      return 0;
+    }
+
+    EMSCRIPTEN_BINDINGS(tracking_module) {
+      function("createBuffer", &createBuffer);
+      function("destroyBuffer", &destroyBuffer);
+      function("initialise_and_run_graph", &initialise_and_run_graph);
+      function("RunMainProcess", &RunMainProcess);
+      function("getVideoResultPointer", &getVideoResultPointer);
+      function("getVideoResultSize", &getVideoResultSize);
+      function("shut_down_graph", &shut_down_graph);
+    }
