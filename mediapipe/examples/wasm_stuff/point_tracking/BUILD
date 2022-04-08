@@ -24,6 +24,7 @@ DEFAULT_EMSCRIPTEN_LINKOPTS = [
     "-s USE_PTHREADS=0",  # Disable pthreads
     "-s USE_WEBGL2=1",
     "-s ERROR_ON_UNDEFINED_SYMBOLS=0",
+    "--bind"
    # "-s LLD_REPORT_UNDEFINED=1",
 ]
 
@@ -46,7 +47,66 @@ cc_binary(
         "-s ERROR_ON_UNDEFINED_SYMBOLS=0",
     ]
 )
+
+
 wasm_cc_binary(
     name = "object-tracking-wasm",
     cc_target = ":object-tracking-mobile",
+)
+
+
+
+cc_binary(
+    name = "tracking-web",
+    srcs = ["tracking_web.cc"],
+    # deps = [
+    #     "//mediapipe/calculators/core:pass_through_calculator",
+    #     "//mediapipe/framework:calculator_graph",
+    #     "//mediapipe/framework/port:logging",
+    #     "//mediapipe/framework/port:parse_text_proto",
+    #     "//mediapipe/framework/port:status",
+    #     "//mediapipe/graphs/tracking/subgraphs:box_tracking_cpu",
+    #     "//mediapipe/framework:calculator_framework",
+    #     "//mediapipe/framework/formats:image_frame",
+    #     "//mediapipe/framework/formats:image_frame_opencv",
+    #     "//mediapipe/framework/port:file_helpers",
+    #     "//mediapipe/framework/port:opencv_imgproc",
+    #     "//mediapipe/framework/port:opencv_video",
+    #     "@com_google_absl//absl/flags:flag",
+    #     "@com_google_absl//absl/flags:parse",
+    # ],
+    # linkopts = [
+    #     "-s USE_PTHREADS=0",
+    #     "-s ALLOW_MEMORY_GROWTH=0",
+    #     "-s ASSERTIONS=1",
+    #     "-s USE_WEBGL2=1", 
+    #     "-s ERROR_ON_UNDEFINED_SYMBOLS=0",
+    #     "--bind",
+    # ]
+    deps = [
+        "//mediapipe/calculators/core:pass_through_calculator",
+        "//mediapipe/framework:calculator_graph",
+        "//mediapipe/framework/port:parse_text_proto",
+        "//mediapipe/framework/port:status",
+        "//mediapipe/graphs/tracking/subgraphs:box_tracking_cpu",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/flags:parse",
+        "//mediapipe/framework/port:opencv_imgproc",
+        "//mediapipe/framework/port:opencv_video",
+    ],
+    linkopts = [
+        "-s USE_PTHREADS=0",
+        "-s ALLOW_MEMORY_GROWTH=1",
+        "-s ASSERTIONS=1",
+        "-s USE_WEBGL2=1",
+        "-s ERROR_ON_UNDEFINED_SYMBOLS=0", 
+        "-s EXPORTED_RUNTIME_METHODS='["+"'cwrap'"+"]'",
+        # "--bind",
+    ]
+)
+
+
+wasm_cc_binary(
+    name = "tracking-web-wasm",
+    cc_target = ":tracking-web",
 )
