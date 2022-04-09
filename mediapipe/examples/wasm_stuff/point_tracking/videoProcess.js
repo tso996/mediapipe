@@ -9,6 +9,8 @@
       "number",
     ]);
     let js_wrapped_destroyBuffer = Module.cwrap("destroyBuffer", "", ["number"]);
+    let js_wrapped_initialise_and_run_graph =  Module.cwrap("initialise_and_run_graph","string");
+    let js_wrapped_shut_down_graph = Module.cwrap("shut_down_graph","")
     let js_wrapped_runMainProcess = Module.cwrap(
       "runMainProcess",
       "",
@@ -164,6 +166,7 @@
     //console.log(context.drawImage(video, 0, 0));
     let looper = async function (fps) {
       const initialisations = await init();
+      let mPInitStatus = js_wrapped_initialise_and_run_graph();
       // const ax = js_wrapped_setCamMatrix(640, 480, 60, 60, 1, 1.5); // this is the settings for the image to detect
       // const imgToDetectPtr = Module.createBuffer(
       //   temporaryDetectCanvas.width,
@@ -273,6 +276,7 @@
     //==================
     function stop(e) {
       console.log("video stopped!");
+      js_wrapped_shut_down_graph();
       var stream = video.srcObject;
       var tracks = stream.getTracks();
 
