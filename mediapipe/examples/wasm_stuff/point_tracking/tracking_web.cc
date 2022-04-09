@@ -146,6 +146,7 @@ int result[5];//return from function that contains the output buffer and size
     //     mediapipe::Packet packet;
     //     if (!poller.Next(&packet)) {
     //       std::cout << "poller.Next error. No next packet.." << std::endl;
+    //        return 5;
     //       //break;
     //     }
     //     auto& output_frame = packet.Get<mediapipe::ImageFrame>();
