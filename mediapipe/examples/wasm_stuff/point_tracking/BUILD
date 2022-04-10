@@ -93,6 +93,8 @@ cc_binary(
         "@com_google_absl//absl/flags:parse",
         "//mediapipe/framework/port:opencv_imgproc",
         "//mediapipe/framework/port:opencv_video",
+        "//third_party:glog",
+        "//mediapipe/framework/port:logging",
     ],
     linkopts = [
         "-s USE_PTHREADS=0",

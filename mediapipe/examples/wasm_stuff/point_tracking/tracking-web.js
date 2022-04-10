@@ -1705,7 +1705,7 @@ var tempI64;
 // === Body ===
 
 var ASM_CONSTS = {
-  639717: function() {let init_once = true; if (init_once) { const cachedFindCanvasEventTarget = findCanvasEventTarget; if (typeof cachedFindCanvasEventTarget !== 'function') { if (typeof console !== 'undefined') { console.error('Expected Emscripten global function ' + '"findCanvasEventTarget" not found. WebGL context creation ' + 'may fail.'); } return; } findCanvasEventTarget = function(target) { if (target == 0) { if (Module && Module.canvas) { return Module.canvas; } else if (Module && Module.canvasCssSelector) { return cachedFindCanvasEventTarget(Module.canvasCssSelector); } if (typeof console !== 'undefined') { console.warn('Module properties canvas and canvasCssSelector not ' + 'found during WebGL context creation.'); } } return cachedFindCanvasEventTarget(target); }; init_once = false; }}
+  641309: function() {let init_once = true; if (init_once) { const cachedFindCanvasEventTarget = findCanvasEventTarget; if (typeof cachedFindCanvasEventTarget !== 'function') { if (typeof console !== 'undefined') { console.error('Expected Emscripten global function ' + '"findCanvasEventTarget" not found. WebGL context creation ' + 'may fail.'); } return; } findCanvasEventTarget = function(target) { if (target == 0) { if (Module && Module.canvas) { return Module.canvas; } else if (Module && Module.canvasCssSelector) { return cachedFindCanvasEventTarget(Module.canvasCssSelector); } if (typeof console !== 'undefined') { console.warn('Module properties canvas and canvasCssSelector not ' + 'found during WebGL context creation.'); } } return cachedFindCanvasEventTarget(target); }; init_once = false; }}
 };
 
 
@@ -6850,6 +6850,9 @@ var _shut_down_graph = Module["_shut_down_graph"] = createExportWrapper("shut_do
 var _main = Module["_main"] = createExportWrapper("main");
 
 /** @type {function(...*):?} */
+var _PrintHelloWorld = Module["_PrintHelloWorld"] = createExportWrapper("PrintHelloWorld");
+
+/** @type {function(...*):?} */
 var ___errno_location = Module["___errno_location"] = createExportWrapper("__errno_location");
 
 /** @type {function(...*):?} */
@@ -6915,13 +6918,13 @@ var dynCall_ji = Module["dynCall_ji"] = createExportWrapper("dynCall_ji");
 var dynCall_vij = Module["dynCall_vij"] = createExportWrapper("dynCall_vij");
 
 /** @type {function(...*):?} */
-var dynCall_viijii = Module["dynCall_viijii"] = createExportWrapper("dynCall_viijii");
-
-/** @type {function(...*):?} */
 var dynCall_vj = Module["dynCall_vj"] = createExportWrapper("dynCall_vj");
 
 /** @type {function(...*):?} */
 var dynCall_viij = Module["dynCall_viij"] = createExportWrapper("dynCall_viij");
+
+/** @type {function(...*):?} */
+var dynCall_viijii = Module["dynCall_viijii"] = createExportWrapper("dynCall_viijii");
 
 /** @type {function(...*):?} */
 var dynCall_iij = Module["dynCall_iij"] = createExportWrapper("dynCall_iij");
