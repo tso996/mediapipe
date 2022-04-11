@@ -112,3 +112,32 @@ wasm_cc_binary(
     name = "tracking-web-wasm",
     cc_target = ":tracking-web",
 )
+
+
+
+cc_binary(
+    name = "hello-world-web",
+    srcs = ["helloWorldWasm.cc"],
+    deps = [
+        "//mediapipe/calculators/core:pass_through_calculator",
+        "//mediapipe/framework:calculator_graph",
+        "//mediapipe/framework/port:parse_text_proto",
+        "//mediapipe/framework/port:status",
+        "//third_party:glog",
+        "//mediapipe/framework/port:logging",
+    ],
+    linkopts = [
+        "-s USE_PTHREADS=0",
+        "-s ALLOW_MEMORY_GROWTH=1",
+        "-s ASSERTIONS=1",
+        "-s USE_WEBGL2=1",
+        "-s ERROR_ON_UNDEFINED_SYMBOLS=0", 
+        "--bind",
+    ]
+)
+
+
+wasm_cc_binary(
+    name = "hello-world-wasm",
+    cc_target = ":hello-world-web",
+)

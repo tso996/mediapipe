@@ -4,7 +4,6 @@
     console.log("output.js is loaded!");  
 
     console.log("video process started running.");
-    let js_wrapped_PrintHelloWorld = Module.cwrap("PrintHelloWorld","string");
     let js_wrapped_createBuffer = Module.cwrap("createBuffer", "number", [
       "number",
       "number",
@@ -79,12 +78,10 @@
     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    
+
     //console.log(context.drawImage(video, 0, 0));
     let looper = async function (fps) {
       const initialisations = await init();
-      let helloWorld = js_wrapped_PrintHelloWorld();
-      window.alert("paused!");
       let mPInitStatus = js_wrapped_initialise_and_run_graph();
       console.log("mp graph initialization status: "+mPInitStatus);
  
@@ -92,62 +89,62 @@
 
       //initialization is over
       //===========================================
-      // (function loop() {
-      //   let begin = Date.now();
-      //   try {
-      //     const imageFrameData = captureVideoImage();
-      //     const p = js_wrapped_createBuffer(videoWidth,videoHeight);//Module.createBuffer(videoWidth, videoHeight);
-      //     Module.HEAP8.set(imageFrameData.data, p);
+      (function loop() {
+        let begin = Date.now();
+        try {
+          const imageFrameData = captureVideoImage();
+          const p = js_wrapped_createBuffer(videoWidth,videoHeight);//Module.createBuffer(videoWidth, videoHeight);
+          Module.HEAP8.set(imageFrameData.data, p);
 
-      //     let executionTime = js_wrapped_runMainProcess(
-      //       p,
-      //       videoWidth,
-      //       videoHeight
-      //     ); //width, height
-      //     et.innerHTML = executionTime+"ms";
+          let executionTime = js_wrapped_runMainProcess(
+            p,
+            videoWidth,
+            videoHeight
+          ); //width, height
+          et.innerHTML = executionTime+"ms";
 
-      //     let destroyBuffer = js_wrapped_destroyBuffer(p);
+          let destroyBuffer = js_wrapped_destroyBuffer(p);
 
     
-      //       const videoResultPointer = js_wrapped_getVideoResultPointer();
-      //       const videoResultSize = js_wrapped_getVideoResultSize();
+            const videoResultPointer = js_wrapped_getVideoResultPointer();
+            const videoResultSize = js_wrapped_getVideoResultSize();
 
-      //       const videoResultView = new Uint8Array(
-      //         Module.HEAP8.buffer,
-      //         videoResultPointer,
-      //         videoResultSize
-      //       );
-      //       const videoResult = new Uint8Array(videoResultView);
+            const videoResultView = new Uint8Array(
+              Module.HEAP8.buffer,
+              videoResultPointer,
+              videoResultSize
+            );
+            const videoResult = new Uint8Array(videoResultView);
 
-      //       destroyBuffer = js_wrapped_destroyBuffer(videoResultPointer);
+            destroyBuffer = js_wrapped_destroyBuffer(videoResultPointer);
 
-      //       //:Use U8A to create image data object:
-      //       let imageDataArrayClamped = new Uint8ClampedArray(
-      //         videoResultView,
-      //         videoWidth,
-      //         videoHeight
-      //       );
-      //       var outputImageData = new ImageData(
-      //         imageDataArrayClamped,
-      //         videoWidth,
-      //         videoHeight
-      //       );
-      //       outputCanvasCtx.putImageData(outputImageData, 0, 0);
-      //     // } else {
-      //     //   console.log("not detected!");
-      //     //   outputCanvas.style.visibility = "hidden";
-      //     //   video.style.visibility = "visible";
-      //     // }
-      //   } catch (e) {
-      //     console.log("error is: ", e);
-      //   }
-      //   //====================================
-      //   if (!stopVideo) {
-      //     let delay = 1000 / fps - (Date.now() - begin);
-      //     setTimeout(loop, delay);
-      //   }
-      //   // animationLoopId = window.requestAnimationFrame(loop);
-      // })();
+            //:Use U8A to create image data object:
+            let imageDataArrayClamped = new Uint8ClampedArray(
+              videoResultView,
+              videoWidth,
+              videoHeight
+            );
+            var outputImageData = new ImageData(
+              imageDataArrayClamped,
+              videoWidth,
+              videoHeight
+            );
+            outputCanvasCtx.putImageData(outputImageData, 0, 0);
+          // } else {
+          //   console.log("not detected!");
+          //   outputCanvas.style.visibility = "hidden";
+          //   video.style.visibility = "visible";
+          // }
+        } catch (e) {
+          console.log("error is: ", e);
+        }
+        //====================================
+        if (!stopVideo) {
+          let delay = 1000 / fps - (Date.now() - begin);
+          setTimeout(loop, delay);
+        }
+        // animationLoopId = window.requestAnimationFrame(loop);
+      })();
     };
     looper(fps);
 

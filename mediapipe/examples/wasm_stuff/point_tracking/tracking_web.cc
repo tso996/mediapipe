@@ -15,8 +15,6 @@
 // An example of sending OpenCV webcam frames into a MediaPipe graph.
 #include <cstdlib>
 #include <iostream>
-#include "mediapipe/framework/port/logging.h"
-
 
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
@@ -67,10 +65,10 @@ extern "C"{
                 output_stream: "out"
               }
             )pb");
-      // std::cout << "Initialising calculator graph.." << std::endl;
-      // graph.Initialize(config);
-      // auto status_or_poller = graph.AddOutputStreamPoller("output");
-      // mediapipe::OutputStreamPoller poller = std::move(status_or_poller.value());
+      std::cout << "Initialising calculator graph.." << std::endl;
+      graph.Initialize(config);
+      auto status_or_poller = graph.AddOutputStreamPoller("output");
+      mediapipe::OutputStreamPoller poller = std::move(status_or_poller.value());
 
       int result[5];//return from function that contains the output buffer and size
 
@@ -96,15 +94,16 @@ extern "C"{
 
           EMSCRIPTEN_KEEPALIVE
           absl::Status initialise_and_run_graph(){
-            graph.Initialize(config);
-            ASSIGN_OR_RETURN(mediapipe::OutputStreamPoller poller,
-                   graph.AddOutputStreamPoller(kOutputStream));
             std::cout << "Calculator graph run started.." << std::endl;
             MP_RETURN_IF_ERROR(graph.StartRun({}));
             std::cout << "about to start processing frames" << std::endl;
             return absl::OkStatus();
           }
 
+          //call this once from the js before passing frames in loop
+          absl::Status initialize_proxy(){
+            
+          }
 
           EMSCRIPTEN_KEEPALIVE
           int runMainProcess(uint8_t* img_in, int width, int height) {
@@ -145,10 +144,10 @@ extern "C"{
 
               // Get the graph result packet, or stop if that fails.
               mediapipe::Packet packet;
-              // if (!poller.Next(&packet)) {
-              //   std::cout << "poller.Next error. No next packet.." << std::endl;
-              //    return 5;
-              // }
+              if (!poller.Next(&packet)) {
+                std::cout << "poller.Next error. No next packet.." << std::endl;
+                 return 5;
+              }
               auto& output_frame = packet.Get<mediapipe::ImageFrame>();
 
               // Convert back to opencv for display or saving.
@@ -211,59 +210,9 @@ extern "C"{
           }
 
           int main(int argc, char** argv) {
-            google::InitGoogleLogging(argv[0]);
             std::cout << "box tracking wasm loaded." << std::endl;
             return 0;
           }
-
-
-
-
-
-
-
-          EMSCRIPTEN_KEEPALIVE
-          absl::Status PrintHelloWorld() {
-            std::cout << "inside printHelloWorld"<< std::endl;
-            // Configures a simple graph, which concatenates 2 PassThroughCalculators.
-            mediapipe::CalculatorGraphConfig config =
-                mediapipe::ParseTextProtoOrDie<mediapipe::CalculatorGraphConfig>(R"pb(
-                  input_stream: "in"
-                  output_stream: "out"
-                  node {
-                    calculator: "PassThroughCalculator"
-                    input_stream: "in"
-                    output_stream: "out1"
-                  }
-                  node {
-                    calculator: "PassThroughCalculator"
-                    input_stream: "out1"
-                    output_stream: "out"
-                  }
-                )pb");
-            std::cout << "inside printHelloWorld1"<< std::endl;
-            mediapipe::CalculatorGraph graph;
-            graph.Initialize(config);
-            auto status_or_poller = graph.AddOutputStreamPoller("out");
-            mediapipe::OutputStreamPoller poller = std::move(status_or_poller.value());
-
-            graph.StartRun({});
-            // Give 10 input packets that contains the same std::string "Hello World!".
-            std::cout << "inside printHelloWorld2"<< std::endl;
-            for (int i = 0; i < 10; ++i) {
-              graph.AddPacketToInputStream(
-                  "in", mediapipe::MakePacket<std::string>("Hello World!").At(mediapipe::Timestamp(i)));
-            }
-            // Close the input stream "in".
-            graph.CloseInputStream("in");
-            std::cout << "inside printHelloWorld2.5"<< std::endl;
-            mediapipe::Packet packet;
-            // Get the output packets std::string.
-            for (int i = 0; i < 10; ++i) {
-              std::cout <<packet.Get<std::string>()<< std::endl;
-            }
-            std::cout << "inside printHelloWorld3"<< std::endl;
-    }
 
           // EMSCRIPTEN_BINDINGS(tracking_module) {
           //   function("createBuffer", &createBuffer,allow_raw_pointers());

@@ -971,6 +971,7 @@ cc_library(
         "scheduler_shared.h",
     ],
     copts = select({
+        # "//conditions:default": ["-ObjC++",],
         "//conditions:default": [],
         "//mediapipe:apple": [
             "-ObjC++",
