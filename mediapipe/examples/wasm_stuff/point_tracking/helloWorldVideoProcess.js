@@ -4,7 +4,8 @@ var Module = {
   //let js_wrapped_print_hello_world = Module.cwrap("PrintHelloWorld", "string");
   // const myTimeout = setTimeout(function() {
   //   //js_wrapped_print_hello_world();
-  //   Module.PrintHelloWorld();
+  //   let a = Module.PrintHelloWorld();
+  //   console.log("this is the output from wasm: ", a);
   // }, 3000);
   
  }
