@@ -9,11 +9,11 @@
       "number",
     ]);
     let js_wrapped_destroyBuffer = Module.cwrap("destroyBuffer", "", ["number"]);
-    let js_wrapped_initialise_and_run_graph =  Module.cwrap("initialise_and_run_graph","string");
+    let js_wrapped_initialise_and_run_graph =  Module.cwrap("initialise_and_run_graph","number");
     let js_wrapped_shut_down_graph = Module.cwrap("shut_down_graph","")
     let js_wrapped_runMainProcess = Module.cwrap(
       "runMainProcess",
-      "",
+      "number",
       ["number", "number", "number"]
     );
   
@@ -78,7 +78,7 @@
     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+    let starter = true;
     //console.log(context.drawImage(video, 0, 0));
     let looper = async function (fps) {
       const initialisations = await init();
@@ -90,19 +90,20 @@
       //initialization is over
       //===========================================
       (function loop() {
+        if(starter){
         let begin = Date.now();
         try {
           const imageFrameData = captureVideoImage();
           const p = js_wrapped_createBuffer(videoWidth,videoHeight);//Module.createBuffer(videoWidth, videoHeight);
           Module.HEAP8.set(imageFrameData.data, p);
-
+          console.log("flag1")
           let executionTime = js_wrapped_runMainProcess(
             p,
             videoWidth,
             videoHeight
           ); //width, height
           et.innerHTML = executionTime+"ms";
-
+          console.log("flag2")
           let destroyBuffer = js_wrapped_destroyBuffer(p);
 
     
@@ -143,10 +144,14 @@
           let delay = 1000 / fps - (Date.now() - begin);
           setTimeout(loop, delay);
         }
+      }
         // animationLoopId = window.requestAnimationFrame(loop);
       })();
     };
-    looper(fps);
+    setTimeout(function() {
+      looper(fps);
+      }, 1000);
+    
 
     //press esc to stop the video process
     let a = document.addEventListener("keydown", function (e) {
@@ -157,6 +162,7 @@
 
     //==================
     function stop(e) {
+      starter = false;
       console.log("video stopped!");
       js_wrapped_shut_down_graph();
       var stream = video.srcObject;

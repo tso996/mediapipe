@@ -1705,7 +1705,7 @@ var tempI64;
 // === Body ===
 
 var ASM_CONSTS = {
-  640733: function() {let init_once = true; if (init_once) { const cachedFindCanvasEventTarget = findCanvasEventTarget; if (typeof cachedFindCanvasEventTarget !== 'function') { if (typeof console !== 'undefined') { console.error('Expected Emscripten global function ' + '"findCanvasEventTarget" not found. WebGL context creation ' + 'may fail.'); } return; } findCanvasEventTarget = function(target) { if (target == 0) { if (Module && Module.canvas) { return Module.canvas; } else if (Module && Module.canvasCssSelector) { return cachedFindCanvasEventTarget(Module.canvasCssSelector); } if (typeof console !== 'undefined') { console.warn('Module properties canvas and canvasCssSelector not ' + 'found during WebGL context creation.'); } } return cachedFindCanvasEventTarget(target); }; init_once = false; }}
+  641757: function() {let init_once = true; if (init_once) { const cachedFindCanvasEventTarget = findCanvasEventTarget; if (typeof cachedFindCanvasEventTarget !== 'function') { if (typeof console !== 'undefined') { console.error('Expected Emscripten global function ' + '"findCanvasEventTarget" not found. WebGL context creation ' + 'may fail.'); } return; } findCanvasEventTarget = function(target) { if (target == 0) { if (Module && Module.canvas) { return Module.canvas; } else if (Module && Module.canvasCssSelector) { return cachedFindCanvasEventTarget(Module.canvasCssSelector); } if (typeof console !== 'undefined') { console.warn('Module properties canvas and canvasCssSelector not ' + 'found during WebGL context creation.'); } } return cachedFindCanvasEventTarget(target); }; init_once = false; }}
 };
 
 
@@ -6820,16 +6820,34 @@ var asm = createWasm();
 var ___wasm_call_ctors = Module["___wasm_call_ctors"] = createExportWrapper("__wasm_call_ctors");
 
 /** @type {function(...*):?} */
-var _main = Module["_main"] = createExportWrapper("main");
+var _createBuffer = Module["_createBuffer"] = createExportWrapper("createBuffer");
 
 /** @type {function(...*):?} */
-var _PrintHelloWorld = Module["_PrintHelloWorld"] = createExportWrapper("PrintHelloWorld");
+var _malloc = Module["_malloc"] = createExportWrapper("malloc");
+
+/** @type {function(...*):?} */
+var _destroyBuffer = Module["_destroyBuffer"] = createExportWrapper("destroyBuffer");
 
 /** @type {function(...*):?} */
 var _free = Module["_free"] = createExportWrapper("free");
 
 /** @type {function(...*):?} */
-var _malloc = Module["_malloc"] = createExportWrapper("malloc");
+var _initialise_and_run_graph = Module["_initialise_and_run_graph"] = createExportWrapper("initialise_and_run_graph");
+
+/** @type {function(...*):?} */
+var _runMainProcess = Module["_runMainProcess"] = createExportWrapper("runMainProcess");
+
+/** @type {function(...*):?} */
+var _getVideoResultPointer = Module["_getVideoResultPointer"] = createExportWrapper("getVideoResultPointer");
+
+/** @type {function(...*):?} */
+var _getVideoResultSize = Module["_getVideoResultSize"] = createExportWrapper("getVideoResultSize");
+
+/** @type {function(...*):?} */
+var _shut_down_graph = Module["_shut_down_graph"] = createExportWrapper("shut_down_graph");
+
+/** @type {function(...*):?} */
+var _main = Module["_main"] = createExportWrapper("main");
 
 /** @type {function(...*):?} */
 var ___errno_location = Module["___errno_location"] = createExportWrapper("__errno_location");
