@@ -44,8 +44,19 @@
 
             mediapipe::CalculatorGraph graph;
             graph.Initialize(config);
+            
             // auto status_or_poller = graph.AddOutputStreamPoller("out");
             // mediapipe::OutputStreamPoller poller = std::move(status_or_poller.value());
+           
+            std::string a;
+            graph.ObserveOutputStream("out", [&a](const mediapipe::Packet& p) {
+                    a = a + " " + p.Get<std::string>();
+                    std::cout << "flag 4"<< std::endl;
+                    std::cout << p.Get<std::string>()<<std::endl;
+                    // return 80;
+                    return absl::OkStatus();
+                });
+            
             graph.StartRun({});
             std::cout << "flag 2"<< std::endl;
             // Give 10 input packets that contains the same std::string "Hello World!".
@@ -63,15 +74,10 @@
             //     std::cout << poller.QueueSize()<< std::endl;
             //     std::cout << packet.Get<std::string>()<<std::endl;
             // }
-            std::string a;
-            graph.ObserveOutputStream("out", [&](const mediapipe::Packet& p) {
-                    a = p.Get<std::string>();
-                    std::cout << "flag 4"<< std::endl;
-                    std::cout << p.Get<std::string>()<<std::endl;
-                    // return 80;
-                    return absl::OkStatus();
-                });
+            
+            graph.WaitUntilIdle();
             std::cout << a << std::endl;
+
             // return graph.WaitUntilDone();
             std::cout << "flag 5"<< std::endl;
             return 1;
