@@ -43,26 +43,135 @@ using std::chrono::duration_cast;
 using std::chrono::duration;
 using std::chrono::milliseconds;
 extern "C"{
-    constexpr char kInputStream[] = "input_video";
-    constexpr char kOutputStream[] = "output_video";
-    constexpr char kWindowName[] = "MediaPipe";
+    // constexpr char kInputStream[] = "input_video";
+    // constexpr char kOutputStream[] = "output_video";
+    // constexpr char kWindowName[] = "MediaPipe";
 
     bool frame_available = true;
 
     mediapipe::CalculatorGraph graph;
     mediapipe::CalculatorGraphConfig config =
           mediapipe::ParseTextProtoOrDie<mediapipe::CalculatorGraphConfig>(R"pb(
-            input_stream: "in"
-            output_stream: "out"
-            node {
-              calculator: "PassThroughCalculator"
-              input_stream: "in"
-              output_stream: "out1"
+            input_stream: "VIDEO:input_video"
+            input_stream: "BOXES:start_pos"
+            input_stream: "CANCEL_ID:cancel_object_id"
+            output_stream: "BOXES:boxes"
+            output_stream: "output_video"
+
+
+            node: {
+              calculator: "ImageTransformationCalculator"
+              input_stream: "IMAGE:input_video"
+              output_stream: "IMAGE:downscaled_input_video"
+              node_options: {
+                [type.googleapis.com/mediapipe.ImageTransformationCalculatorOptions] {
+                  output_width: 320
+                  output_height: 240
+                }
+              }
             }
-            node {
-              calculator: "PassThroughCalculator"
-              input_stream: "out1"
-              output_stream: "out"
+            node:{
+            calculator: "PassThroughCalculator"
+            input_stream: "VIDEO:input_video"
+            output_stream:"output_video"
+            }
+            # Performs motion analysis on an incoming video stream.
+            node: {
+              calculator: "MotionAnalysisCalculator"
+              input_stream: "VIDEO:downscaled_input_video"
+              output_stream: "CAMERA:camera_motion"
+              output_stream: "FLOW:region_flow"
+
+              node_options: {
+                [type.googleapis.com/mediapipe.MotionAnalysisCalculatorOptions]: {
+                  analysis_options {
+                    analysis_policy: ANALYSIS_POLICY_CAMERA_MOBILE
+                    flow_options {
+                      fast_estimation_min_block_size: 100
+                      top_inlier_sets: 1
+                      frac_inlier_error_threshold: 3e-3
+                      downsample_mode: DOWNSAMPLE_TO_INPUT_SIZE
+                      verification_distance: 5.0
+                      verify_long_feature_acceleration: true
+                      verify_long_feature_trigger_ratio: 0.1
+                      tracking_options {
+                        max_features: 500
+                        adaptive_extraction_levels: 2
+                        min_eig_val_settings {
+                          adaptive_lowest_quality_level: 2e-4
+                        }
+                        klt_tracker_implementation: KLT_OPENCV
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            # Reads optical flow fields defined in
+            # mediapipe/framework/formats/motion/optical_flow_field.h,
+            # returns a VideoFrame with 2 channels (v_x and v_y), each channel is quantized
+            # to 0-255.
+            node: {
+              calculator: "FlowPackagerCalculator"
+              input_stream: "FLOW:region_flow"
+              input_stream: "CAMERA:camera_motion"
+              output_stream: "TRACKING:tracking_data"
+
+              node_options: {
+                [type.googleapis.com/mediapipe.FlowPackagerCalculatorOptions]: {
+                  flow_packager_options: {
+                    binary_tracking_data_support: false
+                  }
+                }
+              }
+            }
+
+            # Tracks box positions over time.
+            node: {
+              calculator: "BoxTrackerCalculator"
+              input_stream: "TRACKING:tracking_data"
+              input_stream: "TRACK_TIME:input_video"
+              input_stream: "START_POS:start_pos"
+              input_stream: "CANCEL_OBJECT_ID:cancel_object_id"
+              input_stream_info: {
+                tag_index: "CANCEL_OBJECT_ID"
+                back_edge: true
+              }
+              output_stream: "BOXES:boxes"
+
+              input_stream_handler {
+                input_stream_handler: "SyncSetInputStreamHandler"
+                options {
+                  [mediapipe.SyncSetInputStreamHandlerOptions.ext] {
+                    sync_set {
+                      tag_index: "TRACKING"
+                      tag_index: "TRACK_TIME"
+                    }
+                    sync_set {
+                      tag_index: "START_POS"
+                    }
+                    sync_set {
+                      tag_index: "CANCEL_OBJECT_ID"
+                    }
+                  }
+                }
+              }
+
+              node_options: {
+                [type.googleapis.com/mediapipe.BoxTrackerCalculatorOptions]: {
+                  tracker_options: {
+                    track_step_options {
+                      track_object_and_camera: true
+                      tracking_degrees: TRACKING_DEGREE_OBJECT_SCALE
+                      inlier_spring_force: 0.0
+                      static_motion_temporal_ratio: 3e-2
+                    }
+                  }
+                  visualize_tracking_data: false
+                  streaming_track_data_cache_size: 100
+                }
+              }
             }
           )pb");
 
@@ -99,7 +208,7 @@ extern "C"{
           graph.Initialize(config);
           std::cout << "Calculator graph run started.." << std::endl;
           ASSIGN_OR_RETURN(mediapipe::OutputStreamPoller poller,
-                          graph.AddOutputStreamPoller("out"));
+                          graph.AddOutputStreamPoller("output_video"));
           std::cout << "about to start processing frames" << std::endl;
           return absl::OkStatus();
         }
@@ -146,7 +255,7 @@ extern "C"{
             std::cout << "flag 2" << std::endl;
             
             mediapipe::Packet packet;
-             graph.ObserveOutputStream("out", [&packet](const mediapipe::Packet& p) {
+             graph.ObserveOutputStream("output_video", [&packet](const mediapipe::Packet& p) {
                     packet = p;
                     return absl::OkStatus();
                 });
@@ -158,7 +267,7 @@ extern "C"{
             size_t frame_timestamp_us = 
                 (double)cv::getTickCount() / (double)cv::getTickFrequency() * 1e6;
                 // graph.AddPacketToInputStream("in", mediapipe::Adopt(input_frame.release()).At(mediapipe::Timestamp(frame_timestamp_us)));
-                 graph.AddPacketToInputStream("in", mediapipe::MakePacket<Mat>(camera_frame).At(mediapipe::Timestamp(frame_timestamp_us)));
+                 graph.AddPacketToInputStream("VIDEO:input_video", mediapipe::MakePacket<Mat>(camera_frame).At(mediapipe::Timestamp(frame_timestamp_us)));
             std::cout << "flag 3" << std::endl;
             // Get the graph result packet, or stop if that fails.
             //mediapipe::Packet packet;
@@ -168,7 +277,7 @@ extern "C"{
             //   //break;
             // }
              
-              graph.CloseInputStream("in");
+              graph.CloseInputStream("VIDEO:input_video");
               std::cout << "flag 4" << std::endl;
               graph.WaitUntilIdle();
 
@@ -234,7 +343,7 @@ extern "C"{
         EMSCRIPTEN_KEEPALIVE
         void shut_down_graph(){
           std::cout << "Shutting down.." << std::endl;
-          graph.CloseInputStream("in");
+          graph.CloseInputStream("VIDEO:input_video");
           graph.WaitUntilDone();
         }
 

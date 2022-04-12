@@ -30,7 +30,7 @@
       
     console.log("video process started running.");
     
-    let fps = 30;
+    let fps = 0.5;
     let videoHeight = 480;
     let videoWidth = 640;
     let video = document.querySelector("#video");
