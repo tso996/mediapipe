@@ -269,13 +269,7 @@ extern "C"{
                 // graph.AddPacketToInputStream("in", mediapipe::Adopt(input_frame.release()).At(mediapipe::Timestamp(frame_timestamp_us)));
                  graph.AddPacketToInputStream("VIDEO:input_video", mediapipe::MakePacket<Mat>(camera_frame).At(mediapipe::Timestamp(frame_timestamp_us)));
             std::cout << "flag 3" << std::endl;
-            // Get the graph result packet, or stop if that fails.
-            //mediapipe::Packet packet;
-            // if (!poller.Next(&packet)) {
-            //   std::cout << "poller.Next error. No next packet.." << std::endl;
-            //    return 5;
-            //   //break;
-            // }
+           
              
               graph.CloseInputStream("VIDEO:input_video");
               std::cout << "flag 4" << std::endl;
@@ -305,30 +299,7 @@ extern "C"{
                   auto ms_int = duration_cast<milliseconds>(t2 - t1);
                   duration<double, std::milli> ms_double = t2 - t1;
                   return ms_int.count();
-        // auto t1 = high_resolution_clock::now();  
-        //     //============================================
-        //       Mat matrix1;
-        //       Mat transformationMatCurrentFrame;
-        //       uint8_t* img_out;
-        //       size_t size;
-        //       int rows = height;
-        //       int cols = width;
-        //       //============
-        
-        //       matrix1 = Mat(rows, cols, CV_8UC4);
-        //       matrix1.data = img_in;
-        //       uint8_t* outputVideoBuffer = (uint8_t*)malloc(cols * rows * 4 * sizeof(uint8_t));
-        //       outputVideoBuffer = matrix1.data;
-        //       result[3] = (int)outputVideoBuffer;
-        //       result[4] = rows*cols*4;
-        //       matrix1.release();
-
-        //       //===========================================
-        //       //execution time....
-        //       auto t2 = high_resolution_clock::now();
-        //       auto ms_int = duration_cast<milliseconds>(t2 - t1);
-        //       duration<double, std::milli> ms_double = t2 - t1;
-        //       return ms_int.count();
+    
 
         }
 
